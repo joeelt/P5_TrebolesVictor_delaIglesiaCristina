@@ -10,7 +10,10 @@ public class SolucioBacktracking {
 	 * cal definir els atributs necessaris
 	 */
 	private char[][] solucio;
+	private char[][] solucioMillor;
 	private final Encreuades repte;
+	private boolean[] markatge;
+	private int numMillorSol = -1;
 
 	
 	public SolucioBacktracking(Encreuades repte) {
@@ -18,31 +21,6 @@ public class SolucioBacktracking {
 	}
 
 	public char[][] getMillorSolucio() {
-		this.solucio = this.repte.getPuzzle();
-		Iterator<PosicioInicial> espaisDispo = this.repte.getEspaisDisponibles().iterator();
-		int sumaChar, sumaCharAntic = 0;
-		while (espaisDispo.hasNext()) {
-			PosicioInicial posicio = espaisDispo.next();
-			for(int i = 0; i < this.repte.getItemsSize(); i++) {
-				sumaChar = 0;
-				if(this.repte.getItem(i).length == posicio.getLength()) {
-					for (int j = 0; j < this.repte.getItem(i).length; j++) {
-						sumaChar = sumaChar + this.repte.getItem(i)[j];
-					}
-					if(sumaCharAntic < sumaChar) {
-						sumaCharAntic = sumaChar;
-						solucio[posicio.getInitRow()][posicio.getInitCol()] = this.repte.getItem(i)[0];
-						for(int k = 1; k < this.repte.getItem(i).length; k++) {
-							if(posicio.getDireccio() == 'H') {
-								solucio[posicio.getInitRow()][k] = this.repte.getItem(i)[k];
-							} else {
-								solucio[k][posicio.getInitCol()] = this.repte.getItem(i)[k];
-							}
-						}
-					}
-				}
-			}
-		}
 		return solucio; //TODO: Cris
 	}
 
@@ -51,7 +29,13 @@ public class SolucioBacktracking {
 		/* TODO
 		 * cal inicialitzar els atributs necessaris
 		 */
+		markatge = new boolean[this.repte.getItemsSize()];
+		for (int i = 0; i < this.repte.getItemsSize(); i++) {
+			markatge[i] = false;
+		}
+
 		this.solucio = this.repte.getPuzzle();
+		solucioMillor = this.repte.getPuzzle();
 
 		if(!optim) {
 			if (!this.backUnaSolucio(0))
@@ -94,17 +78,29 @@ public class SolucioBacktracking {
 	 */
 	private void backMillorSolucio(int indexUbicacio) {
 		//posible solucion
-		if (esSolucio(indexUbicacio)){
-
+		for (int indexItem = 0; indexItem < this.repte.getItemsSize(); indexItem++) {
+			if (acceptable(indexUbicacio, indexItem)){
+				anotarASolucio(indexUbicacio, indexItem);
+				if (esSolucio(indexUbicacio)){
+					guardarMillorSolucio();
+				} else {
+					backMillorSolucio(indexUbicacio);
+				}
+				desanotarDeSolucio(indexUbicacio, indexItem);
+			}
 		}
-
-
 	}
-	
+
 	private boolean acceptable(int indexUbicacio, int indexItem) {
-		int espaiL = this.repte.getEspaisDisponibles().get(indexUbicacio).getLength();
-		int itemL = this.repte.getItem(indexItem).length;
-        return espaiL == itemL; //TODO: Cris
+		if(indexUbicacio >= this.repte.getEspaisDisponibles().size()) return false;
+		char[] item = this.repte.getItem(indexItem);
+		PosicioInicial posicio = this.repte.getEspaisDisponibles().get(indexUbicacio);
+
+		// TODO item i posicio mateixa longitud
+		if (item.length != posicio.getLength()) return false;
+		// todo marcatge per no repetir la paraula
+		return true;
+
 	}
 	
 	private void anotarASolucio(int indexUbicacio, int indexItem) {
@@ -112,9 +108,9 @@ public class SolucioBacktracking {
 		PosicioInicial posicio = this.repte.getEspaisDisponibles().get(indexUbicacio);
 		int itemL = this.repte.getItem(indexItem).length;
 		solucio[posicio.getInitRow()][posicio.getInitCol()] = this.repte.getItem(indexItem)[0];
-		for(int i = 1; i < itemL; i++) {
+		for(int i = 0; i < itemL; i++) {
 			if(posicio.getDireccio() == 'H') {
-				solucio[posicio.getInitRow()][i] = this.repte.getItem(indexItem)[i];
+				solucio[posicio.getInitRow()][posicio.getInitCol()+i] = this.repte.getItem(indexItem)[i];
 			} else {
 				solucio[i][posicio.getInitCol()] = this.repte.getItem(indexItem)[i];
 			}
@@ -147,32 +143,32 @@ public class SolucioBacktracking {
 
 	
 	private boolean esSolucio(int index) {
-		return index == this.repte.getEspaisDisponibles().size(); // TODO: Cris
+		return index+1 == this.repte.getEspaisDisponibles().size(); // TODO: Cris
 	}
-	
-	private int calcularFuncioObjectiu(char[][] matriu) {
 
-		return 0; //TODO: Victor
+	//
+	private int calcularFuncioObjectiu(char[][] matriu) { // TODO: Cris
+		int valor = 0;
+		for(int i = 0; i < matriu.length; i++) {
+			for(int j = 0; j < matriu.length; j++) {
+				valor += matriu[i][j];
+			}
+		}
+		return valor;
 	}
 	
 	private void guardarMillorSolucio() {
-		// TODO - cal guardar un clone - Victor
+		// TODO - cal guardar un clone - Cris
+		int puntuacioActual = calcularFuncioObjectiu(this.solucio);
 
-		char[][] copiaSolucio = new char[solucio.length][solucio[0].length];
-
-		for (int i = 0; i < solucio.length; i++){
-			for (int j = 0; j < solucio[i].length; j++){
-				copiaSolucio[i][j] = solucio[i][j];
+		if (puntuacioActual > numMillorSol){
+			for (int i = 0; i < solucio.length; i++){
+				for (int j = 0; j < solucio[i].length; j++){
+					solucioMillor[i][j] = solucio[i][j];
+				}
 			}
+			numMillorSol = puntuacioActual;
 		}
-
-		int puntuacioActual = calcularFuncioObjectiu(copiaSolucio);
-		int puntacioMillor  = calcularFuncioObjectiu(this.solucio);
-
-		if (puntuacioActual > puntacioMillor){
-			solucio = copiaSolucio;
-		}
-
 	}
 	
 	public String toString() {
