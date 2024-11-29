@@ -94,25 +94,63 @@ public class SolucioBacktracking {
 	private boolean acceptable(int indexUbicacio, int indexItem) {
 		if(indexUbicacio >= this.repte.getEspaisDisponibles().size()) return false;
 		char[] item = this.repte.getItem(indexItem);
-		PosicioInicial posicio = this.repte.getEspaisDisponibles().get(indexUbicacio);
 
-		// TODO item i posicio mateixa longitud
-		if (item.length != posicio.getLength()) return false;
-		// todo marcatge per no repetir la paraula
+		PosicioInicial posicio = this.repte.getEspaisDisponibles().get(indexUbicacio);
+		int itemL = item.length;
+		if (itemL != posicio.getLength()) {
+			return false;
+		}
+		if (markatge[indexItem]) {
+			return false;
+		}
+		if (posicio.getDireccio() == 'H') {
+			for (int i = 0; i < itemL; i++) {
+				if (solucio[posicio.getInitRow()][posicio.getInitCol() + i] != ' ' && solucio[posicio.getInitRow()][posicio.getInitCol() + i] != item[i]) {
+					return false;
+				}
+			}
+		} else {
+			for (int i = 0; i < itemL; i++) {
+				if (solucio[posicio.getInitRow() + i][posicio.getInitCol()] != ' ' && solucio[posicio.getInitRow() + i][posicio.getInitCol()] != item[i]) {
+					return false;
+				}
+			}
+		}
 		return true;
+
+//		char[] item = this.repte.getItem(indexItem);
+//		PosicioInicial posicio = this.repte.getEspaisDisponibles().get(indexUbicacio);
+//
+//		// TODO item i posicio mateixa longitud
+//		if (item.length != posicio.getLength()) return false;
+//		// todo marcatge per no repetir la paraula
+//		if (markatge[indexItem]) return false;
+//		return true;
 
 	}
 	
 	private void anotarASolucio(int indexUbicacio, int indexItem) {
 		//TODO: Cris
+//		PosicioInicial posicio = this.repte.getEspaisDisponibles().get(indexUbicacio);
+//		int itemL = this.repte.getItem(indexItem).length;
+//		solucio[posicio.getInitRow()][posicio.getInitCol()] = this.repte.getItem(indexItem)[0];
+//		for(int i = 0; i < itemL; i++) {
+//			if(posicio.getDireccio() == 'H') {
+//				solucio[posicio.getInitRow()][posicio.getInitCol()+i] = this.repte.getItem(indexItem)[i];
+//			} else {
+//				solucio[i][posicio.getInitCol()] = this.repte.getItem(indexItem)[i];
+//			}
+//		}
+		char[] item = this.repte.getItem(indexItem);
 		PosicioInicial posicio = this.repte.getEspaisDisponibles().get(indexUbicacio);
-		int itemL = this.repte.getItem(indexItem).length;
-		solucio[posicio.getInitRow()][posicio.getInitCol()] = this.repte.getItem(indexItem)[0];
-		for(int i = 0; i < itemL; i++) {
-			if(posicio.getDireccio() == 'H') {
-				solucio[posicio.getInitRow()][posicio.getInitCol()+i] = this.repte.getItem(indexItem)[i];
-			} else {
-				solucio[i][posicio.getInitCol()] = this.repte.getItem(indexItem)[i];
+		int itemL = item.length;
+		if (posicio.getDireccio() == 'H') {
+			for (int i = 0; i < itemL; i++) {
+				solucio[posicio.getInitRow()][posicio.getInitCol() + i] = item[i];
+			}
+		} else {
+			for (int i = 0; i < itemL; i++) {
+				solucio[posicio.getInitRow() + i][posicio.getInitCol()] = item[i];
 			}
 		}
 	}
