@@ -2,8 +2,6 @@ package backtracking;
 import estructura.Encreuades;
 import estructura.PosicioInicial;
 
-import java.util.Iterator;
-
 public class SolucioBacktracking {
 
 	/* TODO
@@ -84,7 +82,7 @@ public class SolucioBacktracking {
 				if (esSolucio(indexUbicacio)){
 					guardarMillorSolucio();
 				} else {
-					backMillorSolucio(indexUbicacio);
+					backMillorSolucio(indexUbicacio+1);
 				}
 				desanotarDeSolucio(indexUbicacio, indexItem);
 			}
@@ -94,50 +92,98 @@ public class SolucioBacktracking {
 	private boolean acceptable(int indexUbicacio, int indexItem) {
 		if(indexUbicacio >= this.repte.getEspaisDisponibles().size()) return false;
 		char[] item = this.repte.getItem(indexItem);
-		PosicioInicial posicio = this.repte.getEspaisDisponibles().get(indexUbicacio);
 
-		// TODO item i posicio mateixa longitud
-		if (item.length != posicio.getLength()) return false;
-		// todo marcatge per no repetir la paraula
-		return true;
-
-	}
-	
-	private void anotarASolucio(int indexUbicacio, int indexItem) {
-		//TODO: Cris
 		PosicioInicial posicio = this.repte.getEspaisDisponibles().get(indexUbicacio);
-		int itemL = this.repte.getItem(indexItem).length;
-		solucio[posicio.getInitRow()][posicio.getInitCol()] = this.repte.getItem(indexItem)[0];
-		for(int i = 0; i < itemL; i++) {
-			if(posicio.getDireccio() == 'H') {
-				solucio[posicio.getInitRow()][posicio.getInitCol()+i] = this.repte.getItem(indexItem)[i];
-			} else {
-				solucio[i][posicio.getInitCol()] = this.repte.getItem(indexItem)[i];
+		if (item.length != posicio.getLength()) {
+			return false;
+		}
+		if (markatge[indexItem]) {
+			return false;
+		}
+		if (posicio.getDireccio() == 'H') {
+			for (int i = 0; i < item.length; i++) {
+				if (solucio[posicio.getInitRow()][posicio.getInitCol() + i] != ' ' && solucio[posicio.getInitRow()][posicio.getInitCol() + i] != item[i]) {
+					return false;
+				}
+			}
+		} else {
+			for (int i = 0; i < item.length; i++) {
+				if (solucio[posicio.getInitRow() + i][posicio.getInitCol()] != ' ' && solucio[posicio.getInitRow() + i][posicio.getInitCol()] != item[i]) {
+					return false;
+				}
 			}
 		}
+		return true;
+
+//		char[] item = this.repte.getItem(indexItem);
+//		PosicioInicial posicio = this.repte.getEspaisDisponibles().get(indexUbicacio);
+//
+//		// TODO item i posicio mateixa longitud
+//		if (item.length != posicio.getLength()) return false;
+//		// todo marcatge per no repetir la paraula
+//		if (markatge[indexItem]) return false;
+//		return true;
+
+	}
+
+	private void anotarASolucio(int indexUbicacio, int indexItem) {
+		//TODO: Cris
+//		PosicioInicial posicio = this.repte.getEspaisDisponibles().get(indexUbicacio);
+//		int itemL = this.repte.getItem(indexItem).length;
+//		solucio[posicio.getInitRow()][posicio.getInitCol()] = this.repte.getItem(indexItem)[0];
+//		for(int i = 0; i < itemL; i++) {
+//			if(posicio.getDireccio() == 'H') {
+//				solucio[posicio.getInitRow()][posicio.getInitCol()+i] = this.repte.getItem(indexItem)[i];
+//			} else {
+//				solucio[i][posicio.getInitCol()] = this.repte.getItem(indexItem)[i];
+//			}
+//		}
+		char[] item = this.repte.getItem(indexItem);
+		PosicioInicial posicio = this.repte.getEspaisDisponibles().get(indexUbicacio);
+		// item i posicio mateixa longitud
+		if (posicio.getDireccio() == 'H') {
+			for (int i = 0; i < item.length; i++) {
+				solucio[posicio.getInitRow()][posicio.getInitCol() + i] = item[i];
+			}
+		} else {
+			for (int i = 0; i < item.length; i++) {
+				solucio[posicio.getInitRow() + i][posicio.getInitCol()] = item[i];
+			}
+		}
+		markatge[indexItem] = true;
 	}
 
 	private void desanotarDeSolucio(int indexUbicacio, int indexItem) {
 		//TODO: Cris
 		PosicioInicial posicio = this.repte.getEspaisDisponibles().get(indexUbicacio);
-		for(int i = 0; i < posicio.getLength(); i++) {
-			if(posicio.getDireccio() == 'H') {
-				if(esPotEliminar(posicio.getInitRow(), i, 'H')) {
-					solucio[posicio.getInitRow()][i] = ' ';
+		int l;
+		if(posicio.getDireccio() == 'H') {
+			l = posicio.getInitCol();
+			for(int i = 0; i < posicio.getLength(); i++) {
+				if (esPotEliminar(posicio.getInitRow(), l, 'H')) {
+					solucio[posicio.getInitRow()][l] = ' ';
 				}
-			} else {
-				if(esPotEliminar(i, posicio.getInitCol(), 'V')) {
-					solucio[i][posicio.getInitCol()] = ' ';
+				l++;
+			}
+		} else {
+			l = posicio.getInitRow();
+			for(int i = 0; i < posicio.getLength(); i++) {
+				if (esPotEliminar(l, posicio.getInitCol(), 'V')) {
+					solucio[l][posicio.getInitCol()] = ' ';
 				}
+				l++;
 			}
 		}
+		markatge[indexItem] = false;
 	}
 
 	private boolean esPotEliminar(int x, int y, char direccio) {
 		if(direccio == 'H') {
-			return  (x == this.solucio.length || '▪' == this.solucio[y][x+1]) && (x == 0 || '▪' == this.solucio[y][x-1]);
+			return  (x > 0 && ('▪' == this.solucio[x-1][y] || ' ' == this.solucio[x-1][y])) ||
+					(x < this.solucio.length-1 && ('▪' == this.solucio[x+1][y] || ' ' == this.solucio[x+1][y]));
 		} else {
-			return (y == this.solucio.length || '▪' == this.solucio[y+1][x]) && (x == 0 || '▪' == this.solucio[y-1][x]);
+			return (y > 0 && ('▪' == this.solucio[x][y-1] || ' ' == this.solucio[x][y-1])) ||
+					(y < this.solucio.length-1 && ('▪' == this.solucio[x][y+1] || ' ' == this.solucio[x][y+1]));
 		}
 	}
 
@@ -150,8 +196,8 @@ public class SolucioBacktracking {
 	private int calcularFuncioObjectiu(char[][] matriu) { // TODO: Cris
 		int valor = 0;
 		for(int i = 0; i < matriu.length; i++) {
-			for(int j = 0; j < matriu.length; j++) {
-				valor += matriu[i][j];
+			for(int j = 0; j < matriu[i].length; j++) {
+				if(matriu[i][j] != '▪') valor += matriu[i][j];
 			}
 		}
 		return valor;
@@ -172,15 +218,15 @@ public class SolucioBacktracking {
 	}
 	
 	public String toString() {
-		String resultat = "";
+		StringBuilder resultat = new StringBuilder();
 		//TODO: Cris
-		for(int i = 0; i < solucio.length; i++) {
-			for(int j = 0; j < solucio[i].length; j++) {
-				resultat += solucio[i][j] + " ";
-			}
-			resultat += "\n";
-		}
-		return resultat;
+        for (char[] chars : solucio) {
+            for (char aChar : chars) {
+                resultat.append(aChar).append(" ");
+            }
+            resultat.append("\n");
+        }
+		return resultat.toString();
 	}
 
 }
